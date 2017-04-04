@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -48,6 +49,15 @@ func main() {
 	client := github.NewClient(oauth2.NewClient(ctx, sts))
 
 	forks, _, err := client.Repositories.ListForks(ctx, cfg.owner, cfg.repo, nil)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+
+	cmd := exec.Command("git", "clone", cfg.sshUrl)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
