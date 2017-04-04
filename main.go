@@ -43,6 +43,11 @@ func parseFlags() *config {
 	return cfg
 }
 
+func newClient(ctx context.Context, cfg *config) *github.Client {
+	sts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.token})
+	return github.NewClient(oauth2.NewClient(ctx, sts))
+}
+
 func execCommand(name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
 	cmd.Stdout = os.Stdout
@@ -56,10 +61,8 @@ func execCommand(name string, arg ...string) {
 
 func main() {
 	cfg := parseFlags()
-
 	ctx := context.Background()
-	sts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.token})
-	client := github.NewClient(oauth2.NewClient(ctx, sts))
+	client := newClient(ctx, cfg)
 
 	forks, _, err := client.Repositories.ListForks(ctx, cfg.owner, cfg.repo, nil)
 	if err != nil {
