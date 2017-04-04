@@ -48,6 +48,15 @@ func newClient(ctx context.Context, cfg *config) *github.Client {
 	return github.NewClient(oauth2.NewClient(ctx, sts))
 }
 
+func listForks(ctx context.Context, cfg *config, client *github.Client) []*github.Repository {
+	forks, _, err := client.Repositories.ListForks(ctx, cfg.owner, cfg.repo, nil)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+	return forks
+}
+
 func execCommand(name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
 	cmd.Stdout = os.Stdout
@@ -63,12 +72,7 @@ func main() {
 	cfg := parseFlags()
 	ctx := context.Background()
 	client := newClient(ctx, cfg)
-
-	forks, _, err := client.Repositories.ListForks(ctx, cfg.owner, cfg.repo, nil)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
+	forks := listForks(ctx, cfg, client)
 
 	execCommand("git", []string{"clone", cfg.sshUrl}...)
 	execCommand("git", []string{"-C", cfg.repo, "remote", "rename", "origin", "upstream"}...)
