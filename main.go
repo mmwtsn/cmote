@@ -11,9 +11,10 @@ import (
 )
 
 type config struct {
-	owner string
-	repo  string
-	token string
+	owner  string
+	repo   string
+	sshUrl string
+	token  string
 }
 
 func main() {
@@ -39,6 +40,8 @@ func main() {
 		fmt.Println("Missing GitHub token")
 		os.Exit(-1)
 	}
+
+	cfg.sshUrl = fmt.Sprintf("git@github.com:%v/%v.git", cfg.owner, cfg.repo)
 
 	ctx := context.Background()
 	sts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.token})
