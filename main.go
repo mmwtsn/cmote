@@ -63,7 +63,23 @@ func main() {
 		os.Exit(-1)
 	}
 
+	cmd = exec.Command("git", "-C", cfg.repo, "remote", "rename", "origin", "upstream")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+
 	for _, fork := range forks {
-		fmt.Println(*fork.SSHURL)
+		cmd = exec.Command("git", "-C", cfg.repo, "remote", "add", *fork.Owner.Login, *fork.SSHURL)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
 	}
 }
