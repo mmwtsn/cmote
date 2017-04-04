@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 type config struct {
@@ -34,5 +38,19 @@ func main() {
 	if cfg.token == "" {
 		fmt.Println("Missing GitHub token")
 		os.Exit(-1)
+	}
+
+	ctx := context.Background()
+	sts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.token})
+	client := github.NewClient(oauth2.NewClient(ctx, sts))
+
+	forks, _, err := client.Repositories.ListForks(ctx, cfg.owner, cfg.repo, nil)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+
+	for _, fork := range forks {
+		fmt.Println(*fork.SSHURL)
 	}
 }
