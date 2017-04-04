@@ -18,6 +18,13 @@ type config struct {
 	token  string
 }
 
+func checkArg(arg string, msg string) {
+	if arg == "" {
+		fmt.Println(msg)
+		os.Exit(-1)
+	}
+}
+
 func execCommand(name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
 	cmd.Stdout = os.Stdout
@@ -38,20 +45,9 @@ func main() {
 
 	flag.Parse()
 
-	if cfg.owner == "" {
-		fmt.Println("Missing GitHub owner")
-		os.Exit(-1)
-	}
-
-	if cfg.repo == "" {
-		fmt.Println("Missing GitHub repo")
-		os.Exit(-1)
-	}
-
-	if cfg.token == "" {
-		fmt.Println("Missing GitHub token")
-		os.Exit(-1)
-	}
+	checkArg(cfg.owner, "Missing GitHub owner")
+	checkArg(cfg.repo, "Missing Github repo")
+	checkArg(cfg.token, "Missing GitHub token")
 
 	cfg.sshUrl = fmt.Sprintf("git@github.com:%v/%v.git", cfg.owner, cfg.repo)
 
