@@ -18,6 +18,17 @@ type config struct {
 	token  string
 }
 
+func execCommand(name string, arg ...string) {
+	cmd := exec.Command(name, arg...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+}
+
 func main() {
 	cfg := new(config)
 
@@ -54,32 +65,10 @@ func main() {
 		os.Exit(-1)
 	}
 
-	cmd := exec.Command("git", "clone", cfg.sshUrl)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-
-	cmd = exec.Command("git", "-C", cfg.repo, "remote", "rename", "origin", "upstream")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
+	execCommand("git", []string{"clone", cfg.sshUrl}...)
+	execCommand("git", []string{"-C", cfg.repo, "remote", "rename", "origin", "upstream"}...)
 
 	for _, fork := range forks {
-		cmd = exec.Command("git", "-C", cfg.repo, "remote", "add", *fork.Owner.Login, *fork.SSHURL)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
-		}
+		execCommand("git", []string{"-C", cfg.repo, "remote", "add", *fork.Owner.Login, *fork.SSHURL}...)
 	}
 }
