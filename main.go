@@ -25,18 +25,7 @@ func checkArg(arg string, msg string) {
 	}
 }
 
-func execCommand(name string, arg ...string) {
-	cmd := exec.Command(name, arg...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-}
-
-func main() {
+func parseFlags() *config {
 	cfg := new(config)
 
 	flag.StringVar(&cfg.owner, "owner", "", "GitHub owner")
@@ -50,6 +39,23 @@ func main() {
 	checkArg(cfg.token, "Missing GitHub token")
 
 	cfg.sshUrl = fmt.Sprintf("git@github.com:%v/%v.git", cfg.owner, cfg.repo)
+
+	return cfg
+}
+
+func execCommand(name string, arg ...string) {
+	cmd := exec.Command(name, arg...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+}
+
+func main() {
+	cfg := parseFlags()
 
 	ctx := context.Background()
 	sts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.token})
